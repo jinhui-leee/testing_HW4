@@ -1,0 +1,6 @@
+language: java
+jdk:
+  - openjdk11
+
+# Build script (you can also use 'mvn' instead of './mvnw')
+script: ./mvnw clean install
