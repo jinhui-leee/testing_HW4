@@ -3,6 +3,7 @@ package org.example.cartCalculator;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,120 +23,140 @@ public class PriceRuleTest {
         extraChargeForElectronics = new ExtraChargeForElectronics();
     }
 
+    @After
+    public void tearDown() {
+        // 객체 초기화
+        cart = null;
+        deliveryPrice = null;
+        extraChargeForElectronics = null;
+    }
+
     @Test
-    public void testDeliveryPrice_NoItems() {
+    public void testCase1_NoItems_NoElectronics() {
         when(cart.numberOfItems()).thenReturn(0);
-
-        double price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(0.0, price, 0.01);
-    }
-
-    @Test
-    public void testDeliveryPrice_OneToThreeItems() {
-        when(cart.numberOfItems()).thenReturn(1);
-
-        double price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(5.0, price, 0.01);
-
-        when(cart.numberOfItems()).thenReturn(3);
-
-        price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(5.0, price, 0.01);
-
-
-    }
-
-    @Test
-    public void testDeliveryPrice_FourToTenItems() {
-        when(cart.numberOfItems()).thenReturn(4);
-
-        double price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(12.5, price, 0.01);
-
-        when(cart.numberOfItems()).thenReturn(10);
-
-        price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(12.5, price, 0.01);
-    }
-
-    @Test
-    public void testDeliveryPrice_ElevenOrMoreItems() {
-        when(cart.numberOfItems()).thenReturn(11);
-
-        double price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(20.0, price, 0.01);
-
-        when(cart.numberOfItems()).thenReturn(20);
-
-        price = deliveryPrice.priceToAggregate(cart);
-
-        assertEquals(20.0, price, 0.01);
-    }
-
-    @Test
-    public void testExtraChargeForElectronics_NoElectronics() {
-        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
-        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
-
-        double price = extraChargeForElectronics.priceToAggregate(cart);
-
-        assertEquals(0.0, price, 0.01);
-    }
-
-    @Test
-    public void testExtraChargeForElectronics_WithElectronics() {
-        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
-        when(cart.getItems()).thenReturn(Collections.singletonList(electronicItem));
-
-        double price = extraChargeForElectronics.priceToAggregate(cart);
-
-        assertEquals(7.5, price, 0.01);
-    }
-
-    @Test
-    public void testExtraChargeForElectronics_MixedItems() {
-        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
-        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
-        when(cart.getItems()).thenReturn(Arrays.asList(electronicItem, groceryItem));
-
-        double price = extraChargeForElectronics.priceToAggregate(cart);
-
-        assertEquals(7.5, price, 0.01);
-    }
-
-    // 새로운 테스트 케이스 추가
-    @Test
-    public void testExtraChargeForElectronics_NoItems() {
-        // 장바구니에 아무 아이템도 없는 경우를 테스트합니다.
         when(cart.getItems()).thenReturn(Collections.emptyList());
 
-        double price = extraChargeForElectronics.priceToAggregate(cart);
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
 
-        assertEquals(0.0, price, 0.01);
+        assertEquals(0.0, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
     }
 
-
-
-
-
-
-
-    // 새로운 테스트 케이스 추가
     @Test
-    public void testExtraChargeForElectronics_MultipleElectronics() {
-        // 전자기기가 여러 개 포함된 경우를 테스트합니다.
-        Item electronicItem1 = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
-        Item electronicItem2 = new Item("Smartphone", 500.0, ItemType.ELECTRONIC);
-        when(cart.getItems()).thenReturn(Arrays.asList(electronicItem1, electronicItem2));
+    public void testCase2_OneItem_WithElectronics() {
+        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
+        when(cart.numberOfItems()).thenReturn(1);
+        when(cart.getItems()).thenReturn(Collections.singletonList(electronicItem));
 
-        double price = extraChargeForElectronics.priceToAggregate(cart);
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
 
-        assertEquals(7.5, price, 0.01);
+        assertEquals(5.0, deliveryPriceResult, 0.01);
+        assertEquals(7.5, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase3_ThreeItems_NoElectronics() {
+        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
+        when(cart.numberOfItems()).thenReturn(3);
+        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(5.0, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase4_FourItems_WithElectronics() {
+        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
+        when(cart.numberOfItems()).thenReturn(4);
+        when(cart.getItems()).thenReturn(Collections.singletonList(electronicItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(12.5, deliveryPriceResult, 0.01);
+        assertEquals(7.5, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase5_TenItems_NoElectronics() {
+        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
+        when(cart.numberOfItems()).thenReturn(10);
+        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(12.5, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase6_ElevenItems_WithElectronics() {
+        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
+        when(cart.numberOfItems()).thenReturn(11);
+        when(cart.getItems()).thenReturn(Collections.singletonList(electronicItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(20.0, deliveryPriceResult, 0.01);
+        assertEquals(7.5, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase7_ElevenItems_NoElectronics() {
+        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
+        when(cart.numberOfItems()).thenReturn(11);
+        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(20.0, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase8_FourToTenItems_NoElectronics() {
+        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
+        when(cart.numberOfItems()).thenReturn(6);
+        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(12.5, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase9_TwoItems_NoElectronics() {
+        Item groceryItem = new Item("Apple", 1.0, ItemType.GROCERY);
+        when(cart.numberOfItems()).thenReturn(2);
+        when(cart.getItems()).thenReturn(Collections.singletonList(groceryItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(5.0, deliveryPriceResult, 0.01);
+        assertEquals(0.0, electronicsChargeResult, 0.01);
+    }
+
+    @Test
+    public void testCase10_ThreeItems_WithElectronics() {
+        Item electronicItem = new Item("Laptop", 1000.0, ItemType.ELECTRONIC);
+        when(cart.numberOfItems()).thenReturn(3);
+        when(cart.getItems()).thenReturn(Collections.singletonList(electronicItem));
+
+        double deliveryPriceResult = deliveryPrice.priceToAggregate(cart);
+        double electronicsChargeResult = extraChargeForElectronics.priceToAggregate(cart);
+
+        assertEquals(5.0, deliveryPriceResult, 0.01);
+        assertEquals(7.5, electronicsChargeResult, 0.01);
     }
 }
